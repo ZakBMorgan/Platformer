@@ -2,10 +2,10 @@ import java.awt.*;
 
 public class Player {
     private int x, y, width, height;
+    private int vx = 0;
     private int vy = 0;
-    private int vx = 0; // Horizontal velocity
     private final int gravity = 1;
-    private final int jumpStrength = -15;
+    private final int jumpStrength = -27; //was -15
 
     public Player(int x, int y, int width, int height) {
         this.x = x;
@@ -44,7 +44,6 @@ public class Player {
         x = newX;
     }
 
-    // Getters
     public int getX() {
         return x;
     }
