@@ -19,19 +19,21 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     Player player = new Player(play[0], play[1], play[2], play[3], Color.black);
     Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3], Color.green);
     Text title = new Text(width / 2 - 400, 0, 100, "E L E M E N T A L", 2);
-    Text intro = new Text(width / 2 - 200, 0, 50, "use " + "\"W A S D\"" + " to move", 3);
-    ArrayList<Heart> hearts = new ArrayList<>();
+    Text intro = new Text(width / 2 - 250, 0, 50, "use " + "\"W A S D\"" + " to move", 3);
+    
+    private ArrayList<Heart> hearts = new ArrayList<>(); // stores the 'lives' of the player
 
     private Color[] colors = new Color[]{Color.red, Color.blue, Color.green, Color.yellow};
     private Platform[] platforms = new Platform[1000];
 
     Timer t = new Timer(15, this);
 
+    //movement and overall gameplay functionality
     private boolean canJump;
     private boolean isFalling;
     private boolean hit;
     
-    private int lastPlatformX;
+    private int lastPlatformX; // viable for player respawns
 
     // Declare off-screen buffer and its graphics context
     private Image offScreenImage;
@@ -42,7 +44,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     @Override
     public void paint(Graphics g) {
-
+    	
         // Initialize off-screen buffer if it's null or if the size has changed
         if (offScreenImage == null || offScreenImage.getWidth(this) != getWidth() || offScreenImage.getHeight(this) != getHeight()) {
             offScreenImage = createImage(getWidth(), getHeight());
@@ -55,7 +57,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         // Draw the title
         title.paint(g2d);
-        if (title.getY() >= 1500) {
+        if (title.getY() >= 1200) {
             intro.paint(g2d);
         }
 
@@ -99,8 +101,9 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
             platforms[i] = new Platform(randomX, randomY, platformWidth, 10, colors[n]);
         }
 
-        int size = 35;
-        for (int i = 0; i < 3; i++) {
+        int size = 35; // size of the heart object
+        int hp = 3; // number of hearts
+        for (int i = 0; i < hp; i++) {
             hearts.add(new Heart(width - 55 - i * 50, 50, size, size, Color.red));
         }
 
