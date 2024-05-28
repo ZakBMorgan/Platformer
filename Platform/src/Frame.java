@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 public class Frame extends JFrame implements ActionListener, MouseListener, KeyListener {
@@ -67,10 +69,10 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         
         int platformWidth = 100;
         for (int i = 0; i < platforms.length; i++) {
-            int randomY = (int) (Math.random() * (height / 2 - 100)) + (height / 2 + 100);
+            //int randomY = (int) (Math.random() * 100) + 50 + i * 100;
+        	int randomY = (int) (Math.random() * (height / 2 - 100)) + (height / 2 + 100);
             int randomX = i * 200;
-            Color randomColor = new Color((int)(Math.random() * 0x1000000)); // Generate a random color
-            //platforms[i] = new Platform(randomX, randomY, platformWidth, 10, randomColor);
+            platforms[i] = new Platform(randomX, randomY, platformWidth, 10);
         }
 
         t.start();
@@ -88,6 +90,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         for (Platform platform : platforms) {
             Rectangle platformRect = new Rectangle(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
+            //System.out.println(platform.getX() + ":" + platform.getY());
             if (playerRect.intersects(platformRect) && player.getVy() >= 0 && !isFalling) {
                 player.stopFalling();
                 player.setY(platform.getY() - player.getHeight());
