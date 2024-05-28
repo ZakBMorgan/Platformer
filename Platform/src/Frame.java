@@ -30,6 +30,8 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     private boolean canJump;
     private boolean isFalling;
     private boolean hit;
+    
+    private int lastPlatformX;
 
     // Declare off-screen buffer and its graphics context
     private Image offScreenImage;
@@ -121,6 +123,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
                 player.stopFalling();
                 player.setY(platform.getY() - player.getHeight());
                 player.setColor(platform.getColor());
+                lastPlatformX = platform.getX();
                 canJump = true;
                 return;
             }
@@ -137,7 +140,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         } else if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_D))) {
             player.setVx(10); // only the 'D' key is pressed
         } else if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_S))) {
-        	isFalling = true;
+        	isFalling = true; // only the 'S' key is pressed
         } else {
             player.setVx(0); // no keys are pressed
             isFalling = false;
@@ -153,9 +156,10 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         platform.updatePosition();
         collision();
         repaint();
-        if (player.getY() >= 1300) {
+        if (player.getY() >= 1300) { // takes away 1 life if the player falls off the map
             hearts.remove(0);
-            player.setY(0);
+            player.setY(-1000); // spawns the player above where they fell
+            player.setX(lastPlatformX); // spawns the player above the last platform they touched
             if (hearts.size() == 0) {
                 System.exit(0);
             }
