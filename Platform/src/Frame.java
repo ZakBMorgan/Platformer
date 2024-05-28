@@ -16,7 +16,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     Player player = new Player(play[0], play[1], play[2], play[3]);
     Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3]);
-    Title title = new Title(width / 2 - 250, 50, 500, 100);
+    Title title = new Title(width / 2 - 400, 50, 500, 100);
     
     private Color[] colors = new Color[] {Color.red, Color.blue, Color.green, Color.yellow};
     private Platform[] platforms = new Platform[100];

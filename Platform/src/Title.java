@@ -13,7 +13,8 @@ public class Title {
     public void paint(Graphics g) {
         g.setColor(Color.BLACK);  // Set the desired color for the title
         g.setFont(new Font("TimesRoman", Font.PLAIN, 100));
-        g.drawString("E L E M E N T A L", x + 10, y + 50);
+        g.drawString("E L E M E N T A L", x, y);
+        y++;
     }
 
     // Add any other methods as needed
