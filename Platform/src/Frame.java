@@ -57,8 +57,8 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
             intro.paint(g2d);
         }
 
-        int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2;
-        int offsetY = getHeight() / 2 - player.getY() - player.getHeight() / 2;
+        int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2; // this is the center of the player object
+        int offsetY = getHeight() / 2 - player.getY() - player.getHeight() / 2; // this is the center of the player object
 
         g2d.translate(offsetX, offsetY);
 
@@ -136,8 +136,11 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
             player.setVx(-10); // only the 'A' key is pressed
         } else if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_D))) {
             player.setVx(10); // only the 'D' key is pressed
+        } else if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_S))) {
+        	isFalling = true;
         } else {
             player.setVx(0); // no keys are pressed
+            isFalling = false;
         }
 
         if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_W)) && canJump) {
