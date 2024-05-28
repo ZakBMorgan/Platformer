@@ -6,6 +6,7 @@ public class Player {
     private int vy = 0;
     private final int gravity = 1;
     private final int jumpStrength = -27; //was -15
+    private Color color;
 
     public Player(int x, int y, int width, int height) {
         this.x = x;
@@ -15,7 +16,12 @@ public class Player {
     }
 
     public void paint(Graphics g) {
+    	g.setColor(color);
         g.fillRect(x, y, width, height);
+    }
+    
+    public void setColor(Color color) {
+    	this.color = color;
     }
 
     public void updatePosition() {

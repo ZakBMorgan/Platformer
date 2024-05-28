@@ -1,7 +1,5 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-
 import javax.swing.*;
 
 public class Frame extends JFrame implements ActionListener, MouseListener, KeyListener {
@@ -18,8 +16,10 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     Player player = new Player(play[0], play[1], play[2], play[3]);
     Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3]);
-
-    private Platform[] platforms = new Platform[1000];
+    Title title = new Title(width / 2 - 250, 50, 500, 100);
+    
+    private Color[] colors = new Color[] {Color.red, Color.blue, Color.green, Color.yellow};
+    private Platform[] platforms = new Platform[100];
     
     Timer t = new Timer(15, this);
 
@@ -37,19 +37,23 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
             offScreenImage = createImage(getWidth(), getHeight());
             offScreenGraphics = offScreenImage.getGraphics();
         }
-        
+
         // Use off-screen graphics for drawing
         Graphics2D g2d = (Graphics2D) offScreenGraphics;
         g2d.clearRect(0, 0, getWidth(), getHeight());
+
+        // Draw the title
+        title.paint(g2d);
 
         int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2;
         int offsetY = getHeight() / 2 - player.getY() - player.getHeight() / 2;
 
         g2d.translate(offsetX, offsetY);
-        
+        player.setColor(Color.black);
         player.paint(g2d);
-
         for (Platform platform : platforms) {
+            int n = (int) (Math.random() * colors.length);
+            platform.setColor(colors[n]);
             platform.paint(g2d);
         }
 
@@ -58,9 +62,9 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         // Draw the off-screen buffer to the screen
         g.drawImage(offScreenImage, 0, 0, this);
     }
-    
+
     public Frame() {
-    	background_sfx.play();
+        background_sfx.play();
         setTitle("Platform");
         setLayout(new BorderLayout());
         setSize(600, 600);
@@ -69,8 +73,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         
         int platformWidth = 100;
         for (int i = 0; i < platforms.length; i++) {
-            //int randomY = (int) (Math.random() * 100) + 50 + i * 100;
-        	int randomY = (int) (Math.random() * (height / 2 - 100)) + (height / 2 + 100);
+            int randomY = (int) (Math.random() * (height / 2 - 100)) + (height / 2 + 100);
             int randomX = i * 200;
             platforms[i] = new Platform(randomX, randomY, platformWidth, 10);
         }
@@ -90,7 +93,6 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         for (Platform platform : platforms) {
             Rectangle platformRect = new Rectangle(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
-            //System.out.println(platform.getX() + ":" + platform.getY());
             if (playerRect.intersects(platformRect) && player.getVy() >= 0 && !isFalling) {
                 player.stopFalling();
                 player.setY(platform.getY() - player.getHeight());
@@ -120,7 +122,6 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         }
         if (e.getKeyCode() == KeyEvent.VK_D) {
             player.setVx(10);
-            
         }
         if (e.getKeyCode() == KeyEvent.VK_W && canJump) {
             player.jump();
