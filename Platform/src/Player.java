@@ -5,7 +5,7 @@ public class Player {
     private int vx = 0;
     private int vy = 0;
     private final int gravity = 1;
-    private final int jumpStrength = -27; //was -15
+    private final int jumpStrength = -20; //was -15
     private Color color;
 
     public Player(int x, int y, int width, int height, Color color) {

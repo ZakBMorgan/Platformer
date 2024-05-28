@@ -18,8 +18,8 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     Player player = new Player(play[0], play[1], play[2], play[3], Color.black);
     Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3], Color.green);
-    Text title = new Text(width / 2 - 400, 0, 100, "E L E M E N T A L", 2);
-    Text intro = new Text(width / 2 - 250, 0, 50, "use " + "\"W A S D\"" + " to move", 3);
+    Text title = new Text(width / 2 - 400, 0, 100, "E L E M E N T A L", 3);
+    Text intro = new Text(width / 2 - 250, 0, 50, "use " + "\"W A S D\"" + " to move", 4);
     
     private ArrayList<Heart> hearts = new ArrayList<>(); // stores the 'lives' of the player
 
@@ -27,11 +27,13 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     private Platform[] platforms = new Platform[1000];
 
     Timer t = new Timer(15, this);
+    private int ellapseTime = 0, seconds = 0;
 
     //movement and overall gameplay functionality
     private boolean canJump;
     private boolean isFalling;
     private boolean hit;
+    private boolean isBoss;
     
     private int lastPlatformX; // viable for player respawns
 
@@ -45,6 +47,12 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     @Override
     public void paint(Graphics g) {
     	
+    	ellapseTime += 15;
+    	if(ellapseTime % 1000 < 15) {
+    		seconds++;
+    	}
+    	
+    	
         // Initialize off-screen buffer if it's null or if the size has changed
         if (offScreenImage == null || offScreenImage.getWidth(this) != getWidth() || offScreenImage.getHeight(this) != getHeight()) {
             offScreenImage = createImage(getWidth(), getHeight());
@@ -54,18 +62,23 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         // Use off-screen graphics for drawing
         Graphics2D g2d = (Graphics2D) offScreenGraphics;
         g2d.clearRect(0, 0, getWidth(), getHeight());
-
+        
         // Draw the title
         title.paint(g2d);
         if (title.getY() >= 1200) {
             intro.paint(g2d);
+            if(intro.getY() >= 1200) {
+            	g2d.drawString("Time: "+seconds, width/2 - 100, 100);
+            	g2d.drawString("Distance: " + player.getX(), width/2 - 500, 100);
+            }
         }
+        
 
         int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2; // this is the center of the player object
         int offsetY = getHeight() / 2 - player.getY() - player.getHeight() / 2; // this is the center of the player object
-
+        
         g2d.translate(offsetX, offsetY);
-
+        
         player.paint(g2d);
 
         for (Platform platform : platforms) {
@@ -74,29 +87,34 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         g2d.translate(-offsetX, -offsetY);
 
-        for (int i = 0; i < hearts.size(); i++) {
+        
+         for (int i = 0; i < hearts.size(); i++) {
             hearts.get(i).paint(g2d);
             if (hit) {
                 hearts.remove(0);
                 hit = false;
             }
         }
-
+        
         // Draw the off-screen buffer to the screen
         g.drawImage(offScreenImage, 0, 0, this);
     }
 
     public Frame() {
+    	isBoss = true;
         //background_sfx.play();
         setTitle("Platform");
         setLayout(new BorderLayout());
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setResizable(false);
 
-        int platformWidth = 100;
+        int platformWidth = 100; 
         for (int i = 0; i < platforms.length; i++) {
-            int randomY = (int) (Math.random() * height / 2) + (height / 2);
-            int randomX = i * 200;
+        	int randomY = 1;
+            while(randomY % 200 != 0) {
+            	randomY = (int) (Math.random() * height - 100) + 100;
+            }
+            int randomX = i * 100;
             int n = (int) (Math.random() * colors.length);
             platforms[i] = new Platform(randomX, randomY, platformWidth, 10, colors[n]);
         }
@@ -151,7 +169,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_W)) && canJump) {
             player.jump();
-            jump_sfx.play();
+            //jump_sfx.play();
             canJump = false;
         }
 
@@ -174,12 +192,12 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     @Override
     public void keyPressed(KeyEvent e) {
-        keyMap.put(e.getKeyCode(), true);
+        keyMap.put(e.getKeyCode(), true); // adds a keyCode to the hashMap, and sets it to true
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        keyMap.put(e.getKeyCode(), false);
+        keyMap.put(e.getKeyCode(), false); // sets a keyCode to false when it isn't pressed
     }
 
     @Override
