@@ -3,9 +3,6 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class Frame extends JFrame implements ActionListener, MouseListener, KeyListener {
-	
-	private boolean test;
-
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     int width = (int) screenSize.getWidth();
     int height = (int) screenSize.getHeight();
@@ -35,7 +32,6 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     @Override
     public void paint(Graphics g) {
-    	test = true;
         // Initialize off-screen buffer if it's null or if the size has changed
         if (offScreenImage == null || offScreenImage.getWidth(this) != getWidth() || offScreenImage.getHeight(this) != getHeight()) {
             offScreenImage = createImage(getWidth(), getHeight());
@@ -50,24 +46,19 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         title.paint(g2d);
         if(title.getY() >= 1500) {
         	intro.paint(g2d);
-        	test = false;
         }
 
         int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2;
         int offsetY = getHeight() / 2 - player.getY() - player.getHeight() / 2;
 
-        if(test) {
-        	g2d.translate(offsetX, offsetY);
-        }
+        g2d.translate(offsetX, offsetY);
         
         player.paint(g2d);
         for (Platform platform : platforms) {
             platform.paint(g2d);
         }
-        
-        if(test) {
-        	g2d.translate(-offsetX, -offsetY);
-        }
+
+        g2d.translate(-offsetX, -offsetY);
 
         // Draw the off-screen buffer to the screen
         g.drawImage(offScreenImage, 0, 0, this);
