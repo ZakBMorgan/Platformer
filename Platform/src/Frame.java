@@ -3,6 +3,8 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class Frame extends JFrame implements ActionListener, MouseListener, KeyListener {
+	
+	private boolean test;
 
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     int width = (int) screenSize.getWidth();
@@ -14,12 +16,13 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     private int[] play = new int[]{width / 2, 0, 100, 100};
     private int[] plat = new int[]{width / 2, 2 * height / 3, 100, 10};
 
-    Player player = new Player(play[0], play[1], play[2], play[3]);
-    Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3]);
-    Title title = new Title(width / 2 - 400, 50, 500, 100);
+    Player player = new Player(play[0], play[1], play[2], play[3], Color.black);
+    Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3], Color.green);
+    Text title = new Text(width / 2 - 400, 0, 100, "E L E M E N T A L", 2);
+    Text intro = new Text(width / 2 - 200, 0, 50, "use " + "\"W A S D\"" + " to move", 3);
     
     private Color[] colors = new Color[] {Color.red, Color.blue, Color.green, Color.yellow};
-    private Platform[] platforms = new Platform[100];
+    private Platform[] platforms = new Platform[1000];
     
     Timer t = new Timer(15, this);
 
@@ -32,6 +35,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     @Override
     public void paint(Graphics g) {
+    	test = true;
         // Initialize off-screen buffer if it's null or if the size has changed
         if (offScreenImage == null || offScreenImage.getWidth(this) != getWidth() || offScreenImage.getHeight(this) != getHeight()) {
             offScreenImage = createImage(getWidth(), getHeight());
@@ -44,38 +48,44 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         // Draw the title
         title.paint(g2d);
+        if(title.getY() >= 1500) {
+        	intro.paint(g2d);
+        	test = false;
+        }
 
         int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2;
         int offsetY = getHeight() / 2 - player.getY() - player.getHeight() / 2;
 
-        g2d.translate(offsetX, offsetY);
-        player.setColor(Color.black);
+        if(test) {
+        	g2d.translate(offsetX, offsetY);
+        }
+        
         player.paint(g2d);
         for (Platform platform : platforms) {
-            int n = (int) (Math.random() * colors.length);
-            platform.setColor(colors[n]);
             platform.paint(g2d);
         }
-
-        g2d.translate(-offsetX, -offsetY);
+        
+        if(test) {
+        	g2d.translate(-offsetX, -offsetY);
+        }
 
         // Draw the off-screen buffer to the screen
         g.drawImage(offScreenImage, 0, 0, this);
     }
 
     public Frame() {
-        background_sfx.play();
+        //background_sfx.play();
         setTitle("Platform");
         setLayout(new BorderLayout());
-        setSize(600, 600);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setResizable(false);
         
         int platformWidth = 100;
         for (int i = 0; i < platforms.length; i++) {
-            int randomY = (int) (Math.random() * (height / 2 - 100)) + (height / 2 + 100);
+            int randomY = (int) (Math.random() * height/2) + (height / 2);
             int randomX = i * 200;
-            platforms[i] = new Platform(randomX, randomY, platformWidth, 10);
+            int n = (int) (Math.random() * colors.length);
+            platforms[i] = new Platform(randomX, randomY, platformWidth, 10, colors[n]);
         }
 
         t.start();
@@ -96,6 +106,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
             if (playerRect.intersects(platformRect) && player.getVy() >= 0 && !isFalling) {
                 player.stopFalling();
                 player.setY(platform.getY() - player.getHeight());
+                player.setColor(platform.getColor());
                 canJump = true;
                 return;
             }

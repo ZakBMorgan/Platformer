@@ -8,11 +8,12 @@ public class Player {
     private final int jumpStrength = -27; //was -15
     private Color color;
 
-    public Player(int x, int y, int width, int height) {
+    public Player(int x, int y, int width, int height, Color color) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.color = color;
     }
 
     public void paint(Graphics g) {
@@ -22,6 +23,10 @@ public class Player {
     
     public void setColor(Color color) {
     	this.color = color;
+    }
+    
+    public Color getColor() {
+    	return color;
     }
 
     public void updatePosition() {
