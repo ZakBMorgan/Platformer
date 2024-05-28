@@ -14,7 +14,7 @@ public class Text {
 
     public void paint(Graphics g) {
         g.setColor(Color.BLACK);  // Set the desired color for the title
-        g.setFont(new Font("TimesRoman", Font.PLAIN, size));
+        g.setFont(new Font("Arial", Font.PLAIN, size));
         g.drawString(text, x, y);
         y+=vy;
     }
