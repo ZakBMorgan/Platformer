@@ -24,7 +24,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     Laser laser = new Laser(player.getX());
     
     private ArrayList<Heart> hearts = new ArrayList<>(); // stores the 'lives' of the player
-    private ArrayList<Bullet> bullets = new ArrayList<>();
+    // private ArrayList<Bullet> bullets = new ArrayList<>();
 
     private Color[] colors = new Color[]{Color.red, Color.blue, Color.green, Color.yellow};
     private Platform[] platforms = new Platform[1000];
