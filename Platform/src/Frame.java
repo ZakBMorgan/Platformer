@@ -18,11 +18,11 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     Player player = new Player(play[0], play[1], play[2], play[3], Color.black);
     Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3], Color.green);
-    Bullet bullet = new Bullet(width, player.getY(), 100, 50, Color.red);
     Text title = new Text(width / 2 - 400, 0, 100, "E L E M E N T A L", 3);
     Text intro = new Text(width / 2 - 250, 0, 50, "use " + "\"W A S D\"" + " to move", 4);
-    Text msg = new Text(width / 2 - 250, 200, 50, "sacrafice yourself to the chasm", 3);
-    Laser laser = new Laser();
+    Text msg = new Text(width / 2 - 250, 200, 50, "sacrifice yourself to the chasm", 3);
+    Laser laser = new Laser(player.getX());
+    
     private ArrayList<Heart> hearts = new ArrayList<>(); // stores the 'lives' of the player
     private ArrayList<Bullet> bullets = new ArrayList<>();
 
@@ -32,6 +32,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     private int alpha = 0;
 
     Timer t = new Timer(15, this);
+    Timer laserTimer = new Timer(10000, e -> resetLaser()); // Timer for the laser
     private int ellapseTime = 0, seconds = 0;
     private int distance;
 
@@ -48,22 +49,19 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     private Graphics offScreenGraphics;
 
     private Map<Integer, Boolean> keyMap = new HashMap<>(); // can only store unique key
-    														// in this HashMap, the key is an Integer
+                                                            // in this HashMap, the key is an Integer
 
     @Override
     public void paint(Graphics g) {
-    	
-    	
-    	
-    	ellapseTime += 15;
-    	if(ellapseTime % 1000 < 15) {
-    		seconds++;
-    	}
-    	if(alpha != 255) {
-			alpha++;
-		}
-    	
-    	
+        
+        ellapseTime += 15;
+        if(ellapseTime % 1000 < 15) {
+            seconds++;
+        }
+        if(alpha != 255) {
+            alpha++;
+        }
+        
         // Initialize off-screen buffer if it's null or if the size has changed
         if (offScreenImage == null || offScreenImage.getWidth(this) != getWidth() || offScreenImage.getHeight(this) != getHeight()) {
             offScreenImage = createImage(getWidth(), getHeight());
@@ -79,13 +77,13 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         if (title.getY() >= 1200) {
             intro.paint(g2d);
             if(intro.getY() >= 1200) {
-            	g2d.drawString("Time: "+seconds, width/2 - 100, 100);
-            	distance = player.getX();
-            	g2d.drawString("Distance: " + distance, width/2 - 500, 100);
-            	if(distance > 10000 || hearts.size() == 2) {
-            		msg.paint(g2d);
-            	}
+                g2d.drawString("Time: "+seconds, width/2 - 100, 100);
+                distance = player.getX();
+                g2d.drawString("Distance: " + distance, width/2 - 500, 100);
             }
+        }
+        if(distance > 10000) {
+            msg.paint(g2d);
         }
 
         int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2; // this is the center of the player object
@@ -95,32 +93,20 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         
         player.paint(g2d);
         if(isLaser) {
-        	laser.paint(g2d, alpha, player.getX() - width/2, player.getY() - player.getWidth() / 2, isLaser);
+            laser.paint(g2d, alpha, player.getX() - width/2, player.getY() - player.getHeight() / 2, isLaser);
         }
-        int bull = 0;
-    	if(seconds % 2 == 0) {
-    		bullets.add(new Bullet(width, player.getY(), 100, 50, colors[(int)(Math.random()+4)-1]));
-    		
-    		for(int j = bull; j >= 0; j--)
-    		bullets.get(j).setX(bullets.get(j).getX()-30);
-    		
-    	} else {
-    		bull++;
-    	}
-    	bullets.get(bull).paint(g2d);
-    	
-//        if(isLaser) {
-//        	
-//        	isLaser = false;
-//        	Laser.paint(g2d, alpha, player.getX() - width/2, player.getY() - player.getWidth() / 2, isLaser);
-//    		if(Laser.getHeight() == 0) {
-//    			Laser.setHeight(200);
-//    	     	alpha = 0;
-//    	    }else {
-//    	    	isLaser = true;
-//    	    }
-//        }
-        
+//      int bull = 0;
+//    	if(seconds % 2 == 0) {
+//    		bullets.add(new Bullet(width, player.getY(), 100, 50, colors[(int)(Math.random()+4)-1]));
+//    		
+//    		for(int j = bull; j >= 0; j--)
+//    		bullets.get(j).setX(bullets.get(j).getX()-30);
+//    		
+//    	} else {
+//    		bull++;
+//    	}
+//    	bullets.get(bull).paint(g2d);
+       
        
         for (Platform platform : platforms) {
             platform.paint(g2d);
@@ -135,6 +121,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
                 hearts.remove(0);
                 hit = false;
             }
+            
         }
         
         
@@ -143,7 +130,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     }
 
     public Frame() {
-    	isLaser = true;
+        isLaser = true;
         //background_sfx.play();
         setTitle("Platform");
         setLayout(new BorderLayout());
@@ -153,9 +140,9 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         int platformWidth = 100; 
         for (int i = 0; i < platforms.length; i++) {
-        	int randomY = 1;
+            int randomY = 1;
             while(randomY % 200 != 0) {
-            	randomY = (int) (Math.random() * (height));
+                randomY = (int) (Math.random() * (height - 200) + 200);
             }
             int randomX = i * 100;
             int n = (int) (Math.random() * colors.length);
@@ -163,12 +150,13 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         }
 
         int size = 35; // size of the heart object
-        int hp = 3; // number of hearts
+        int hp = 7; // number of hearts
         for (int i = 0; i < hp; i++) {
             hearts.add(new Heart(width - 55 - i * 50, 50, size, size, Color.red));
         }
 
         t.start();
+        laserTimer.start();
         addMouseListener(this);
         addKeyListener(this);
         setFocusable(true);
@@ -182,8 +170,6 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         Rectangle playerRect = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
         
         Rectangle LaserRect = new Rectangle(laser.getX(), laser.getY(), laser.getWidth(), laser.getHeight());
-        
-        Rectangle bulletRect = new Rectangle(bullets.get(0).getX(), bullets.get(0).getY(),bullets.get(0).getWidth(),bullets.get(0).getHeight());
 
         for (Platform platform : platforms) {
             Rectangle platformRect = new Rectangle(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
@@ -196,24 +182,24 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
                 return;
             }
         }
-        if(playerRect.intersects(bulletRect)) {
-        	hearts.remove(0);
-        }
         
         if(playerRect.intersects(LaserRect) && !targetHit) {
             if(laser.getColor() != null) {
-	        	if(laser.getColor().getAlpha() == 255) {
-	                if(laser.getColor().getRed() == player.getColor().getRed() && 
-	                		laser.getColor().getGreen() == player.getColor().getGreen() && 
-	                		laser.getColor().getBlue() == player.getColor().getBlue()) {
-	                    hit = false;
-	                } else {
-	                	hit = true;
-	                	targetHit = true;
-	                }
-	            }
+                if(laser.getColor().getAlpha() == 255) {
+                    if(laser.getColor().getRed() == player.getColor().getRed() && 
+                            laser.getColor().getGreen() == player.getColor().getGreen() && 
+                            laser.getColor().getBlue() == player.getColor().getBlue()) {
+                        hit = false;
+                    } else {
+                        hit = true;
+                        targetHit = true;
+                    }
+                }
             }
         }
+//        if(playerRect.intersects(bulletRect)) {
+//        	hearts.remove(0);
+//        }
         canJump = false;
     }
 
@@ -225,7 +211,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         } else if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_D))) {
             player.setVx(10); // only the 'D' key is pressed
         } else if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_S))) {
-        	isFalling = true; // only the 'S' key is pressed
+            isFalling = true; // only the 'S' key is pressed
         } else {
             player.setVx(0); // no keys are pressed
             isFalling = false;
@@ -241,15 +227,27 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         platform.updatePosition();
         collision();
         repaint();
-        if (player.getY() >= 1300) { // takes away 1 life if the player falls off the map
+        if (player.getY() >= 1400) { // takes away 1 life if the player falls off the map
             hearts.remove(0);
             player.setY(-1000); // spawns the player above where they fell
             player.setX(lastPlatformX); // spawns the player above the last platform they touched
         }
+        
+        if(hearts.size() == 0) {
+        	System.exit(0);
+        }
+    }
+
+    private void resetLaser() {
+        laser = new Laser(player.getX()); // Create a new Laser object with the player's current x coordinate
+        alpha = 0;
+        isLaser = true;
+        targetHit = false;
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -262,19 +260,24 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+    }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+    }
 
     @Override
-    public void mouseEntered(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+    }
 
     @Override
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -282,3 +285,4 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         });
     }
 }
+
