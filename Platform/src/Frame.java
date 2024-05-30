@@ -18,11 +18,13 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     Player player = new Player(play[0], play[1], play[2], play[3], Color.black);
     Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3], Color.green);
+    Bullet bullet = new Bullet(width, player.getY(), 100, 50, Color.red);
     Text title = new Text(width / 2 - 400, 0, 100, "E L E M E N T A L", 3);
     Text intro = new Text(width / 2 - 250, 0, 50, "use " + "\"W A S D\"" + " to move", 4);
     Text msg = new Text(width / 2 - 250, 200, 50, "sacrafice yourself to the chasm", 3);
     Laser laser = new Laser();
     private ArrayList<Heart> hearts = new ArrayList<>(); // stores the 'lives' of the player
+    private ArrayList<Bullet> bullets = new ArrayList<>();
 
     private Color[] colors = new Color[]{Color.red, Color.blue, Color.green, Color.yellow};
     private Platform[] platforms = new Platform[1000];
@@ -51,6 +53,8 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     @Override
     public void paint(Graphics g) {
     	
+    	
+    	
     	ellapseTime += 15;
     	if(ellapseTime % 1000 < 15) {
     		seconds++;
@@ -58,6 +62,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     	if(alpha != 255) {
 			alpha++;
 		}
+    	
     	
         // Initialize off-screen buffer if it's null or if the size has changed
         if (offScreenImage == null || offScreenImage.getWidth(this) != getWidth() || offScreenImage.getHeight(this) != getHeight()) {
@@ -92,6 +97,18 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         if(isLaser) {
         	laser.paint(g2d, alpha, player.getX() - width/2, player.getY() - player.getWidth() / 2, isLaser);
         }
+        int bull = 0;
+    	if(seconds % 2 == 0) {
+    		bullets.add(new Bullet(width, player.getY(), 100, 50, colors[(int)(Math.random()+4)-1]));
+    		
+    		for(int j = bull; j >= 0; j--)
+    		bullets.get(j).setX(bullets.get(j).getX()-30);
+    		
+    	} else {
+    		bull++;
+    	}
+    	bullets.get(bull).paint(g2d);
+    	
 //        if(isLaser) {
 //        	
 //        	isLaser = false;
@@ -165,6 +182,8 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         Rectangle playerRect = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
         
         Rectangle LaserRect = new Rectangle(laser.getX(), laser.getY(), laser.getWidth(), laser.getHeight());
+        
+        Rectangle bulletRect = new Rectangle(bullets.get(0).getX(), bullets.get(0).getY(),bullets.get(0).getWidth(),bullets.get(0).getHeight());
 
         for (Platform platform : platforms) {
             Rectangle platformRect = new Rectangle(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
@@ -176,6 +195,9 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
                 canJump = true;
                 return;
             }
+        }
+        if(playerRect.intersects(bulletRect)) {
+        	hearts.remove(0);
         }
         
         if(playerRect.intersects(LaserRect) && !targetHit) {
