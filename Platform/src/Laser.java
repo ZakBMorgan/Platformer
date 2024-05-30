@@ -1,15 +1,14 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.Timer;
 
 public class Laser {
     private int x, y;
     private int vx, vy;
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    private int width = 0;
-    private int height = 0;
+    private int width;
+    private int height;
     private Color color;
     private boolean targetLockOn;
     private Timer blastTimer;
@@ -17,14 +16,14 @@ public class Laser {
     private int r, g, b;
     private int n;
 
-    public Laser() {
-    	x = 0;
+    public Laser(int playerX) {
+        x = playerX - (int)(screenSize.getWidth() * 1.5) / 2;
         y = (int) (Math.random() * 2000) - 1000;
         width = (int) (screenSize.getWidth() * 1.5);
         height = 200;
         vy = 10;
         vx = 10;
-    	n = (int) (Math.random() * 3) + 1;
+        n = (int) (Math.random() * 3) + 1;
         blastTimer = new Timer(50, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -34,11 +33,11 @@ public class Laser {
     }
 
     public void paint(Graphics g2d, int a, int targetX, int targetY, boolean shoot) {
-    	if(n == 1) {r = 255; g = 0; b = 0;}
-    	if(n == 2) {r = 0; g = 255; b = 0;}
-    	if(n == 3) {r = 0; g = 0; b = 255;}
-    	if(n == 4) {r = 255; g = 255; b = 0;}
-    	
+        if(n == 1) {r = 255; g = 0; b = 0;}
+        if(n == 2) {r = 0; g = 255; b = 0;}
+        if(n == 3) {r = 0; g = 0; b = 255;}
+        if(n == 4) {r = 255; g = 255; b = 0;}
+        
         color = new Color(r, g, b, a);
         g2d.setColor(color);
         
@@ -88,9 +87,8 @@ public class Laser {
 
     private void blast() {
         if (height > 0) {
-            height -= 30;
-            //y += 10 / 2; // y is not updating
-            updateY();
+            height -= 15;
+            y += 43;
             if (height < 0) {
                 height = 0;
                 blastTimer.stop();
@@ -102,12 +100,8 @@ public class Laser {
         }
     }
     
-    public void updateY() {
-    	y += vy;
-    }
-    
     public Color getColor() {
-    	return color;
+        return color;
     }
 
     public int getX() {
@@ -119,22 +113,22 @@ public class Laser {
     }
     
     public int getWidth() {
-    	return width;
+        return width;
     }
     
     public int getHeight() {
-    	return height;
+        return height;
     }
     
     public void setHeight(int height) {
-    	this.height = height;
+        this.height = height;
     }
     
     public void setX(int x) {
-    	this.x = x;
+        this.x = x;
     }
     
     public void setY(int y) {
-    	this.y = y;
+        this.y = y;
     }
 }
