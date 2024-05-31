@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +13,9 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
     Music background_sfx = new Music("background_sfx.wav", false);
     Music jump_sfx = new Music("jump_sfx.wav", false);
-
+    Music boss_music = new Music("Boss_Music.wav", false);
+    Music laser_sfx = new Music("laser_sfx.wav", false);
+    
     private int[] play = new int[]{width / 2, 0, 100, 100};
     private int[] plat = new int[]{width / 2, 2 * height / 3, 100, 10};
 
@@ -20,20 +23,20 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     Platform platform = new Platform(plat[0], plat[1], plat[2], plat[3], Color.green);
     Text title = new Text(width / 2 - 400, 0, 100, "E L E M E N T A L", 3);
     Text intro = new Text(width / 2 - 250, 0, 50, "use " + "\"W A S D\"" + " to move", 4);
-    Text msg = new Text(width / 2 - 250, 200, 50, "sacrifice yourself to the chasm", 3);
+    Text msg = new Text(width / 2 - 250, 200, 50, "maybe the laser has something to do with those colored platforms...", 3);
     Laser laser = new Laser(player.getX());
-    
+
     private ArrayList<Heart> hearts = new ArrayList<>(); // stores the 'lives' of the player
-    // private ArrayList<Bullet> bullets = new ArrayList<>();
 
     private Color[] colors = new Color[]{Color.red, Color.blue, Color.green, Color.yellow};
     private Platform[] platforms = new Platform[1000];
-    
+
     private int alpha = 0;
 
     Timer t = new Timer(15, this);
     Timer laserTimer = new Timer(10000, e -> resetLaser()); // Timer for the laser
-    private int ellapseTime = 0, seconds = 0;
+    private int ellapseTime = 0, seconds = 0, minutes = 0, milliseconds = 0;
+    private int musicTime = 0;
     private int distance;
 
     // movement and overall game-play functionality
@@ -41,27 +44,41 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
     private boolean isFalling;
     private boolean hit, targetHit;
     private boolean isLaser;
-    
+    private boolean hardmode, isHard;
+
     private int lastPlatformX; // viable for player re-spawns
 
     // Declare off-screen buffer and its graphics context
     private Image offScreenImage;
     private Graphics offScreenGraphics;
 
+    private JMenuBar menuBar;
+
     private Map<Integer, Boolean> keyMap = new HashMap<>(); // can only store unique key
                                                             // in this HashMap, the key is an Integer
 
     @Override
     public void paint(Graphics g) {
-        
         ellapseTime += 15;
-        if(ellapseTime % 1000 < 15) {
+        milliseconds = ((ellapseTime % 1000) / 10);
+        if (ellapseTime % 1000 < 15) {
             seconds++;
+            musicTime++;
+            if (seconds % 60 == 0) {
+                minutes++;
+                seconds /= 60;
+            }
+            if(musicTime % 110 == 0) {
+            	boss_music.play();
+            	musicTime = 0;
+            }
         }
-        if(alpha != 255) {
+        if (alpha != 255 && !hardmode) {
             alpha++;
         }
-        
+        if (alpha != 255 && hardmode) {
+            alpha += 3;
+        }
         // Initialize off-screen buffer if it's null or if the size has changed
         if (offScreenImage == null || offScreenImage.getWidth(this) != getWidth() || offScreenImage.getHeight(this) != getHeight()) {
             offScreenImage = createImage(getWidth(), getHeight());
@@ -71,77 +88,79 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         // Use off-screen graphics for drawing
         Graphics2D g2d = (Graphics2D) offScreenGraphics;
         g2d.clearRect(0, 0, getWidth(), getHeight());
-        
+
         // Draw the title
         title.paint(g2d);
         if (title.getY() >= 1200) {
             intro.paint(g2d);
-            if(intro.getY() >= 1200) {
-                g2d.drawString("Time: "+seconds, width/2 - 100, 100);
+            if (intro.getY() >= 1200) {
+                msg.paint(g2d);
+                String s = "";
+                String ms = "";
+                if ((ellapseTime % 1000) / 10 < 10) {
+                    ms = "0" + String.valueOf(milliseconds);
+                } else {
+                    ms = String.valueOf(milliseconds);
+                }
+                if (seconds < 10) {
+                    s = "0" + String.valueOf(seconds);
+                } else {
+                    s = String.valueOf(seconds);
+                }
+                g2d.drawString("Time: " + minutes + ":" + s + ":" + ms, 100, 100);
                 distance = player.getX();
-                g2d.drawString("Distance: " + distance, width/2 - 500, 100);
+                g2d.drawString("Distance: " + distance, 500, 100);
             }
         }
-        if(distance > 10000) {
-            msg.paint(g2d);
+        if (distance > 20000 && !isHard) {
+            hardmode = true;
+            alpha = 0;
+            isHard = true;
         }
 
         int offsetX = getWidth() / 2 - player.getX() - player.getWidth() / 2; // this is the center of the player object
         int offsetY = getHeight() / 2 - player.getY() - player.getHeight() / 2; // this is the center of the player object
-        
+
         g2d.translate(offsetX, offsetY);
-        
+
         player.paint(g2d);
-        if(isLaser) {
-            laser.paint(g2d, alpha, player.getX() - width/2, player.getY() - player.getHeight() / 2, isLaser);
+
+        if (isLaser) {
+            laser.paint(g2d, alpha, player.getX() - width / 2, player.getY() - player.getHeight() / 2, isLaser);
         }
-//      int bull = 0;
-//    	if(seconds % 2 == 0) {
-//    		bullets.add(new Bullet(width, player.getY(), 100, 50, colors[(int)(Math.random()+4)-1]));
-//    		
-//    		for(int j = bull; j >= 0; j--)
-//    		bullets.get(j).setX(bullets.get(j).getX()-30);
-//    		
-//    	} else {
-//    		bull++;
-//    	}
-//    	bullets.get(bull).paint(g2d);
-       
-       
+
         for (Platform platform : platforms) {
             platform.paint(g2d);
         }
 
         g2d.translate(-offsetX, -offsetY);
 
-        
-         for (int i = 0; i < hearts.size(); i++) {
+        for (int i = 0; i < hearts.size(); i++) {
             hearts.get(i).paint(g2d);
             if (hit) {
                 hearts.remove(0);
                 hit = false;
             }
-            
         }
-        
-        
         // Draw the off-screen buffer to the screen
         g.drawImage(offScreenImage, 0, 0, this);
     }
 
     public Frame() {
         isLaser = true;
+        isHard = false;
+        boss_music.play();
         //background_sfx.play();
         setTitle("Platform");
         setLayout(new BorderLayout());
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setSize(600,600);
+        
+        setSize(1980, 1080);
         setResizable(false);
 
-        int platformWidth = 100; 
+        int platformWidth = 100;
         for (int i = 0; i < platforms.length; i++) {
             int randomY = 1;
-            while(randomY % 200 != 0) {
+            while (randomY % 200 != 0) {
                 randomY = (int) (Math.random() * (height - 200) + 200);
             }
             int randomX = i * 100;
@@ -154,7 +173,6 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         for (int i = 0; i < hp; i++) {
             hearts.add(new Heart(width - 55 - i * 50, 50, size, size, Color.red));
         }
-
         t.start();
         laserTimer.start();
         addMouseListener(this);
@@ -163,13 +181,77 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         requestFocusInWindow();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Create a menu bar
+        menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        // Create a "Game" menu
+        JMenu gameMenu = new JMenu("Game");
+        menuBar.add(gameMenu);
+
+        // Add "Save" menu item
+        JMenuItem saveItem = new JMenuItem("Save");
+        saveItem.addActionListener(e -> saveGameData());
+        gameMenu.add(saveItem);
+
+        // Add "Load" menu item
+        JMenuItem loadItem = new JMenuItem("Load");
+        loadItem.addActionListener(e -> loadGameData());
+        gameMenu.add(loadItem);
+
+        add(menuBar);
+        // Add window listener to save game data on window closing
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                saveGameData();
+                super.windowClosing(e);
+            }
+        });
+        
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
+    }
+
+    private void saveGameData() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showSaveDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try (PrintWriter pw = new PrintWriter(selectedFile)) {
+                pw.println(distance);
+                pw.printf("%02d:%02d:%02d%n", minutes, seconds, milliseconds);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void loadGameData() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try (BufferedReader br = new BufferedReader(new FileReader(selectedFile))) {
+                distance = Integer.parseInt(br.readLine());
+
+                String time = br.readLine();
+                String[] timeParts = time.split(":");
+                minutes = Integer.parseInt(timeParts[0]);
+                seconds = Integer.parseInt(timeParts[1]);
+                milliseconds = Integer.parseInt(timeParts[2]);
+
+                ellapseTime = (minutes * 60000) + (seconds * 1000) + (milliseconds * 10);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     public void collision() {
         Rectangle playerRect = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
-        
-        Rectangle LaserRect = new Rectangle(laser.getX(), laser.getY(), laser.getWidth(), laser.getHeight());
+        Rectangle laserRect = new Rectangle(laser.getX(), laser.getY(), laser.getWidth(), laser.getHeight());
 
         for (Platform platform : platforms) {
             Rectangle platformRect = new Rectangle(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
@@ -182,8 +264,9 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
                 return;
             }
         }
-        
-        if(playerRect.intersects(LaserRect) && !targetHit) {
+
+        if(playerRect.intersects(laserRect) && !targetHit && Laser.isBlasting()) {
+        	laser_sfx.play();
             if(laser.getColor() != null) {
                 if(laser.getColor().getAlpha() == 255) {
                     if(laser.getColor().getRed() == player.getColor().getRed() && 
@@ -197,9 +280,6 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
                 }
             }
         }
-//        if(playerRect.intersects(bulletRect)) {
-//        	hearts.remove(0);
-//        }
         canJump = false;
     }
 
@@ -219,7 +299,7 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
 
         if (Boolean.TRUE.equals(keyMap.get(KeyEvent.VK_W)) && canJump) {
             player.jump();
-            //jump_sfx.play();
+            jump_sfx.play();
             canJump = false;
         }
 
@@ -232,9 +312,9 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
             player.setY(-1000); // spawns the player above where they fell
             player.setX(lastPlatformX); // spawns the player above the last platform they touched
         }
-        
+
         if(hearts.size() == 0) {
-        	System.exit(0);
+            System.exit(0);
         }
     }
 
@@ -285,4 +365,3 @@ public class Frame extends JFrame implements ActionListener, MouseListener, KeyL
         });
     }
 }
-
